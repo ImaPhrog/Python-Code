@@ -103,6 +103,7 @@ class limb():
         segmentlength = armlength / segments
         self.points = [point(segmentlength) for _ in range(segments)]
         self.attach = attach(grabsize)
+        self.clicked = False
 
     def move(self, point1, point2=False):
         if point2 == False:
@@ -128,8 +129,18 @@ class limb():
     def draw(self, width=3, colour=pink):
         for point in self.points:
             pygame.draw.line(screen, colour, point.getcentre(), point.getgoal(), width)
+            print(pygame.draw.line(screen, colour, point.getcentre(), point.getgoal(), width))
         self.attach.draw()
-
+    
+    def click(self):
+        if self.attach.click():
+            if self.clicked:
+                self.clicked = False
+            else:
+                self.clicked = True
+    def getclick(self):
+        return self.clicked
+        
 
 class attach():
     def __init__(self, radius=10, vary = 100):
@@ -159,41 +170,59 @@ class attach():
             return False
 
 class body():
-    def __init__(self, armcount, armsD = ()):
-        for i in range:
-            item1
-        self.arms = [limb(armD[0],armD[1],armD[2]) for _ in range(armcount)]
+    def __init__(self, armcount = 1, totseg = 100, armlength = 100, varylength = 0):
+        segments = totseg // armcount
+        self.varylength = abs(varylength)
+        self.armlength = armlength
+        self.arms = [limb(segments, self.__randomlength()) for _ in range(armcount)]
+
+    def __randomlength(self):
+        length = random.randint((self.armlength-self.varylength),(self.armlength+self.varylength))
+        return length
+
+    def click(self):
+        for arm in self.arms:
+            arm.click()
+
+    def follow(self):
+        for arm in self.arms:
+            if arm.getclick():
+                arm.attach.follow()
+
+    def draw(self):
+        for arm in self.arms:
+            arm.draw()
+    
+
 g = False
 follow = False
-body1 = body(1,(10,100))
-cursor = pygame.mouse.get_pos()
-# while run:
-#     cursor = pygame.mouse.get_pos()
-#     events = pygame.event.get()
-#     for event in events:
-#         if event.type == pygame.KEYDOWN:
-#             if event.key == pygame.K_SPACE:
-#                 if g:
-#                     g = False
-#                 else:
-#                     g = True
-#         elif event.type == pygame.MOUSEBUTTONDOWN:
-#             if arm2.attach.click():
-#                 follow = True
-#
-#
-#         elif event.type == pygame.MOUSEBUTTONUP:
-#             if arm2.attach.click():
-#                 follow = False
-#     screenbg.draw()
-#
-#     # Draw Graphic Shapes
-#     pygame.draw.line(screen, pink, centrepoint, cursor, 3)
-#     pygame.draw.circle(screen, black, centrepoint, armreach, 3)
-#     pygame.draw.circle(screen, yellow, centre.setgoal(cursor), 5, 0)
-#     pygame.draw.line(screen, yellow, centrepoint, centre.setgoal(cursor), 3)
-#     pygame.draw.circle(screen, red, centrepoint, 8, 0)
-#     pygame.draw.circle(screen, pink, cursor, 5, 0)
+body1 = body(2,300,300,0)
+centre = point(300)
+while run:
+    cursor = pygame.mouse.get_pos()
+    events = pygame.event.get()
+    for event in events:
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                if g:
+                    g = False
+                else:
+                    g = True
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            body1.click()
+
+        elif event.type == pygame.MOUSEBUTTONUP:
+            body1.click()
+
+    screenbg.draw()
+
+# Draw Graphic Shapes
+    pygame.draw.line(screen, pink, centrepoint, cursor, 3)
+    pygame.draw.circle(screen, black, centrepoint, armreach, 3)
+    pygame.draw.circle(screen, yellow, centre.setgoal(cursor), 5, 0)
+    pygame.draw.line(screen, yellow, centrepoint, centre.setgoal(cursor), 3)
+    pygame.draw.circle(screen, red, centrepoint, 8, 0)
+    pygame.draw.circle(screen, pink, cursor, 5, 0)
 #
 #     if distance(centrepoint, arm2.attach.get()) > distance(centrepoint, centre.setgoal(arm2.attach.get())):
 #         goal = centre.getgoal()
@@ -206,10 +235,10 @@ cursor = pygame.mouse.get_pos()
 #         arm2.move(goal)
 #
 #     if follow:
-#         arm2.attach.follow()
-#     arm2.draw(4, green)
-#
-#     clock.tick(60)
-#     pygame.display.update()
-#
-# pygame.quit()
+    body1.follow()
+    body1.draw()
+
+    clock.tick(60)
+    pygame.display.update()
+
+pygame.quit()
